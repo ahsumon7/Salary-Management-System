@@ -1,7 +1,6 @@
 package com.ahsumon.SalaryManagementSystem.config;
 
-
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,9 +18,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Autowired
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -40,18 +41,40 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
+                        // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/employees/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/employees/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/employees/**").hasRole("ADMIN")
+
+                        // Employee endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/employees/**").hasAnyRole("ADMIN", "HR", "USER")
+                        .requestMatchers(HttpMethod.POST, "/api/employees/**").hasAnyRole("ADMIN", "HR")
+                        .requestMatchers(HttpMethod.PUT, "/api/employees/**").hasAnyRole("ADMIN", "HR")
                         .requestMatchers(HttpMethod.DELETE, "/api/employees/**").hasRole("ADMIN")
-                        .requestMatchers("/api/grades/**").hasRole("ADMIN")
-                        .requestMatchers("/api/bank-accounts/**").authenticated()
+
+                        // Grade endpoints
+                        .requestMatchers("/api/grades/**").hasAnyRole("ADMIN", "HR")
+
+                        // Bank account endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/bank-accounts/**").hasAnyRole("ADMIN", "HR", "USER")
+                        .requestMatchers(HttpMethod.POST, "/api/bank-accounts/**").hasAnyRole("ADMIN", "HR")
+                        .requestMatchers(HttpMethod.PUT, "/api/bank-accounts/**").hasAnyRole("ADMIN", "HR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/bank-accounts/**").hasRole("ADMIN")
+
+                        // Company bank endpoints
                         .requestMatchers("/api/company-bank/**").hasRole("ADMIN")
-                        .requestMatchers("/api/salary/**").hasRole("ADMIN")
-                        .requestMatchers("/api/transactions/**").authenticated()
-                        .requestMatchers("/api/reports/**").hasRole("ADMIN")
+
+                        // Salary endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/salary/**").hasAnyRole("ADMIN", "HR")
+                        .requestMatchers(HttpMethod.POST, "/api/salary/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/salary/**").hasRole("ADMIN")
+
+                        // Transaction endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/transactions/**").hasAnyRole("ADMIN", "HR", "USER")
+
+                        // Report endpoints
+                        .requestMatchers("/api/reports/**").hasAnyRole("ADMIN", "HR")
+
+                        // All other requests require authentication
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions
@@ -60,9 +83,14 @@ public class SecurityConfig {
                             response.setStatus(401);
                             response.getWriter().write("{\"error\": \"Unauthorized: " + authException.getMessage() + "\"}");
                         })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(403);
+                            response.getWriter().write("{\"error\": \"Access Denied: " + accessDeniedException.getMessage() + "\"}");
+                        })
                 );
 
-        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
