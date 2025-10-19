@@ -1,0 +1,20 @@
+package com.ahsumon.SalaryManagementSystem.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class SalarySheetDTO {
+    private List<SalaryDTO> salaryDetails;
+    private BigDecimal totalPaidSalary;
+    private BigDecimal companyBalanceBefore;
+    private BigDecimal companyBalanceAfter;
+    private LocalDate generatedDate;
+    private Integer totalEmployees;
+}
