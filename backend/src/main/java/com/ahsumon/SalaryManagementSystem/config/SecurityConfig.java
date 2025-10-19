@@ -46,10 +46,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/public/**").permitAll()
 
                         // Employee endpoints
-                        .requestMatchers(HttpMethod.GET, "/api/employees/**").hasAnyRole("ADMIN", "HR", "USER")
-                        .requestMatchers(HttpMethod.POST, "/api/employees/**").hasAnyRole("ADMIN", "HR")
-                        .requestMatchers(HttpMethod.PUT, "/api/employees/**").hasAnyRole("ADMIN", "HR")
-                        .requestMatchers(HttpMethod.DELETE, "/api/employees/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/employees/**").hasAnyRole("ADMIN", "HR", "USER")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/employees/**").hasAnyRole("ADMIN", "HR")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/employees/**").hasAnyRole("ADMIN", "HR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/employees/**").hasRole("ADMIN")
+
 
                         // Grade endpoints
                         .requestMatchers("/api/grades/**").hasAnyRole("ADMIN", "HR")
