@@ -19,4 +19,7 @@ public class SalarySheetDTO {
     private BigDecimal companyBalanceAfter;
     private LocalDate generatedDate;
     private Integer totalEmployees;
+    private Integer transactionCount;
+    private Integer successfulCount;
+    private Integer failedCount;
 }

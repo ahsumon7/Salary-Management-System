@@ -1,11 +1,15 @@
 package com.ahsumon.SalaryManagementSystem.service;
 
+
+import com.ahsumon.SalaryManagementSystem.dto.BankAccountDTO;
 import com.ahsumon.SalaryManagementSystem.dto.EmployeeDTO;
+import com.ahsumon.SalaryManagementSystem.entity.BankAccount;
 import com.ahsumon.SalaryManagementSystem.entity.Employee;
 import com.ahsumon.SalaryManagementSystem.entity.Grade;
 import com.ahsumon.SalaryManagementSystem.exception.ResourceNotFoundException;
 import com.ahsumon.SalaryManagementSystem.repository.EmployeeRepository;
 import com.ahsumon.SalaryManagementSystem.repository.GradeRepository;
+import com.ahsumon.SalaryManagementSystem.utill.EmployeeIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,7 +32,6 @@ public class EmployeeService {
     private EmployeeIdGenerator idGenerator;
 
     public EmployeeDTO createEmployee(EmployeeDTO dto) {
-        // Validate uniqueness of employee ID (4 digits)
         String employeeId = idGenerator.generateUniqueEmployeeId();
 
         Grade grade = gradeRepository.findByGradeId(dto.getGradeId())
@@ -76,5 +79,27 @@ public class EmployeeService {
         return employeeRepository.findAll().stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
+    }
+
+    private EmployeeDTO mapToDTO(Employee employee) {
+        return EmployeeDTO.builder()
+                .employeeId(employee.getEmployeeId())
+                .name(employee.getName())
+                .gradeId(employee.getGrade().getGradeId())
+                .address(employee.getAddress())
+                .mobile(employee.getMobile())
+                .bankAccount(mapBankAccountToDTO(employee.getBankAccount()))
+                .build();
+    }
+
+    private BankAccountDTO mapBankAccountToDTO(BankAccount bankAccount) {
+        return BankAccountDTO.builder()
+                .accountNumber(bankAccount.getAccountNumber())
+                .accountName(bankAccount.getAccountName())
+                .accountType(bankAccount.getAccountType())
+                .bankName(bankAccount.getBankName())
+                .branchName(bankAccount.getBranchName())
+                .currentBalance(bankAccount.getCurrentBalance())
+                .build();
     }
 }
