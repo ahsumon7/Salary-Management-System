@@ -32,21 +32,37 @@ public class EmployeeService {
     private EmployeeIdGenerator idGenerator;
 
     public EmployeeDTO createEmployee(EmployeeDTO dto) {
+        // Generate unique employee ID
         String employeeId = idGenerator.generateUniqueEmployeeId();
 
+        // Fetch grade
         Grade grade = gradeRepository.findByGradeId(dto.getGradeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Grade not found"));
 
+        // Build BankAccount entity from DTO
+        BankAccount bankAccount = BankAccount.builder()
+                .accountType(dto.getBankAccount().getAccountType())
+                .accountName(dto.getBankAccount().getAccountName())
+                .accountNumber(dto.getBankAccount().getAccountNumber())
+                .currentBalance(dto.getBankAccount().getCurrentBalance())
+                .bankName(dto.getBankAccount().getBankName())
+                .branchName(dto.getBankAccount().getBranchName())
+                .build();
+
+        // Build Employee entity
         Employee employee = Employee.builder()
                 .employeeId(employeeId)
                 .name(dto.getName())
                 .grade(grade)
                 .address(dto.getAddress())
                 .mobile(dto.getMobile())
+                .bankAccount(bankAccount) // Important!
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        // Save employee (BankAccount saved automatically due to CascadeType.ALL)
         Employee saved = employeeRepository.save(employee);
+
         return mapToDTO(saved);
     }
 

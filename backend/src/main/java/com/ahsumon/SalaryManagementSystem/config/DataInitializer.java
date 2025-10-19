@@ -27,13 +27,15 @@ public class DataInitializer implements CommandLineRunner {
                     .username("admin")
                     .password(passwordEncoder.encode("admin123"))
                     .role(User.Role.ADMIN)
-                    .build(); // active defaults to true
+                    .active(true) // <-- ADD THIS
+                    .build();
 
             // Create HR user
             User hr = User.builder()
                     .username("hr")
                     .password(passwordEncoder.encode("hr123"))
                     .role(User.Role.HR)
+                    .active(true) // <-- ADD THIS
                     .build();
 
             // Create regular user
@@ -41,6 +43,7 @@ public class DataInitializer implements CommandLineRunner {
                     .username("user")
                     .password(passwordEncoder.encode("user123"))
                     .role(User.Role.USER)
+                    .active(true) // <-- ADD THIS
                     .build();
 
             userRepository.save(admin);
