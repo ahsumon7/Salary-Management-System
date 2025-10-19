@@ -3,6 +3,7 @@ package com.ahsumon.SalaryManagementSystem.entity;
 import com.ahsumon.SalaryManagementSystem.enums.TransactionStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class SalaryTransaction {
 
     @Id

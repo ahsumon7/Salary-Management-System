@@ -4,6 +4,7 @@ package com.ahsumon.SalaryManagementSystem.entity;
 import com.ahsumon.SalaryManagementSystem.enums.AccountType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class BankAccount {
 
     @Id

@@ -1,9 +1,12 @@
 package com.ahsumon.SalaryManagementSystem.service;
 
 import com.ahsumon.SalaryManagementSystem.dto.SalaryBreakdown;
+import com.ahsumon.SalaryManagementSystem.dto.SalaryDTO;
 import com.ahsumon.SalaryManagementSystem.dto.SalarySheetDTO;
 import com.ahsumon.SalaryManagementSystem.entity.*;
 import com.ahsumon.SalaryManagementSystem.enums.TransactionStatus;
+import com.ahsumon.SalaryManagementSystem.exception.InvalidInputException;
+import com.ahsumon.SalaryManagementSystem.exception.ResourceNotFoundException;
 import com.ahsumon.SalaryManagementSystem.repository.CompanyBankAccountRepository;
 import com.ahsumon.SalaryManagementSystem.repository.EmployeeRepository;
 import com.ahsumon.SalaryManagementSystem.repository.SalaryTransactionRepository;
@@ -17,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -123,5 +127,34 @@ public class SalaryTransferService {
         companyBankRepository.save(account);
 
         log.info("Added {} to company account. New balance: {}", amount, account.getBalance());
+    }
+
+    private SalarySheetDTO buildSalarySheetDTO(SalarySheet salarySheet, List<SalaryTransaction> transactions) {
+        List<SalaryDTO> salaryDTOs = transactions.stream()
+                .map(this::mapTransactionToSalaryDTO)
+                .collect(Collectors.toList());
+
+        return SalarySheetDTO.builder()
+                .salaryDetails(salaryDTOs)
+                .totalPaidSalary(salarySheet.getTotalPaidSalary())
+                .companyBalanceBefore(salarySheet.getCompanyBalanceBefore())
+                .companyBalanceAfter(salarySheet.getCompanyBalanceAfter())
+                .generatedDate(salarySheet.getGeneratedDate())
+                .totalEmployees(salarySheet.getTransactionCount())
+                .build();
+    }
+
+    private SalaryDTO mapTransactionToSalaryDTO(SalaryTransaction transaction) {
+        return SalaryDTO.builder()
+                .employeeId(transaction.getEmployee().getId().toString())
+                .employeeName(transaction.getEmployee().getName())
+                .grade(transaction.getEmployee().getGrade().getGradeLevel())
+                .basicSalary(transaction.getBasicSalary())
+                .houseRent(transaction.getHouseRent())
+                .medicalAllowance(transaction.getMedicalAllowance())
+                .totalSalary(transaction.getTotalSalary())
+                .paymentDate(transaction.getTransactionDate())
+                .status(transaction.getStatus().toString())
+                .build();
     }
 }

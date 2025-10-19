@@ -2,6 +2,7 @@ package com.ahsumon.SalaryManagementSystem.service;
 
 import com.ahsumon.SalaryManagementSystem.dto.BankAccountDTO;
 import com.ahsumon.SalaryManagementSystem.entity.BankAccount;
+import com.ahsumon.SalaryManagementSystem.exception.ResourceNotFoundException;
 import com.ahsumon.SalaryManagementSystem.repository.BankAccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,10 @@ public class BankAccountService {
     public BankAccountDTO createAccount(BankAccountDTO dto) {
         BankAccount account = BankAccount.builder()
                 .accountNumber(dto.getAccountNumber())
-                .accountHolder(dto.getAccountHolder())
+                .accountName(dto.getAccountName())
+                .accountType(dto.getAccountType())
+                .bankName(dto.getBankName())
+                .branchName(dto.getBranchName())
                 .currentBalance(dto.getCurrentBalance())
                 .build();
 
@@ -43,7 +47,10 @@ public class BankAccountService {
         BankAccount account = bankAccountRepository.findById(accountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bank account not found"));
 
-        account.setAccountHolder(dto.getAccountHolder());
+        account.setAccountName(dto.getAccountName());
+        account.setAccountType(dto.getAccountType());
+        account.setBankName(dto.getBankName());
+        account.setBranchName(dto.getBranchName());
         account.setCurrentBalance(dto.getCurrentBalance());
 
         return mapToDTO(bankAccountRepository.save(account));
@@ -58,7 +65,10 @@ public class BankAccountService {
     private BankAccountDTO mapToDTO(BankAccount account) {
         return BankAccountDTO.builder()
                 .accountNumber(account.getAccountNumber())
-                .accountHolder(account.getAccountHolder())
+                .accountName(account.getAccountName())
+                .accountType(account.getAccountType())
+                .bankName(account.getBankName())
+                .branchName(account.getBranchName())
                 .currentBalance(account.getCurrentBalance())
                 .build();
     }

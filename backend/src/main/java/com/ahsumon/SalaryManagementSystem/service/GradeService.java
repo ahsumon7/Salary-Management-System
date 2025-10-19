@@ -2,6 +2,7 @@ package com.ahsumon.SalaryManagementSystem.service;
 
 import com.ahsumon.SalaryManagementSystem.dto.GradeDTO;
 import com.ahsumon.SalaryManagementSystem.entity.Grade;
+import com.ahsumon.SalaryManagementSystem.exception.ResourceNotFoundException;
 import com.ahsumon.SalaryManagementSystem.repository.GradeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
