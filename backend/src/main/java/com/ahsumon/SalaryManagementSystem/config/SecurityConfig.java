@@ -53,16 +53,16 @@ public class SecurityConfig {
 
 
                         // Grade endpoints
-                        .requestMatchers("/api/grades/**").hasAnyRole("ADMIN", "HR")
+                        .requestMatchers("/api/v1/grades/**").hasAnyRole("ADMIN", "HR")
 
                         // Bank account endpoints
-                        .requestMatchers(HttpMethod.GET, "/api/bank-accounts/**").hasAnyRole("ADMIN", "HR", "USER")
-                        .requestMatchers(HttpMethod.POST, "/api/bank-accounts/**").hasAnyRole("ADMIN", "HR")
-                        .requestMatchers(HttpMethod.PUT, "/api/bank-accounts/**").hasAnyRole("ADMIN", "HR")
-                        .requestMatchers(HttpMethod.DELETE, "/api/bank-accounts/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/bank-accounts/**").hasAnyRole("ADMIN", "HR", "USER")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/bank-accounts/**").hasAnyRole("ADMIN", "HR")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/bank-accounts/**").hasAnyRole("ADMIN", "HR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/bank-accounts/**").hasRole("ADMIN")
 
                         // Company bank endpoints
-                        .requestMatchers("/api/company-bank/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/company-bank/**").hasRole("ADMIN")
 
                         // Salary endpoints
                         .requestMatchers(HttpMethod.GET, "/api/salary/**").hasAnyRole("ADMIN", "HR")
