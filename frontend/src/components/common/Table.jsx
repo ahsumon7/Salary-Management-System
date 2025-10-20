@@ -7,7 +7,7 @@ const Table = ({ data = [], onEdit, onDelete }) => {
   const headers = Object.keys(data[0] || {});
 
   return (
-    <table className='table'>
+    <table className="table">
       <thead>
         <tr>
           {headers.map((header) => (
@@ -17,19 +17,15 @@ const Table = ({ data = [], onEdit, onDelete }) => {
         </tr>
       </thead>
       <tbody>
-        {data.map((row, idx) => (
-          <tr key={idx}>
-            {headers.map((header) => (
-              <td key={header}>{row[header]}</td>
+        {data.map((row, rowIndex) => (
+          <tr key={row.id || row.accountNumber || rowIndex}>
+            {headers.map((header, cellIndex) => (
+              <td key={cellIndex}>{row[header]}</td>
             ))}
             {(onEdit || onDelete) && (
               <td>
                 {onEdit && <Button onClick={() => onEdit(row)}>Edit</Button>}
-                {onDelete && (
-                  <Button onClick={() => onDelete(row.id || row.employeeId)}>
-                    Delete
-                  </Button>
-                )}
+                {onDelete && <Button onClick={() => onDelete(row)}>Delete</Button>}
               </td>
             )}
           </tr>

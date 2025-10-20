@@ -15,7 +15,7 @@ const BankAccountPage = () => {
     accountName: '',
     accountNumber: '',
     accountType: '',
-    currentBalance: '',
+    currentBalance: 0,
     bankName: '',
     branchName: '',
   });
@@ -29,7 +29,6 @@ const BankAccountPage = () => {
     setLoading(true);
     try {
       const response = await bankAccountService.getBankAccounts();
-      // extract the array from response.data
       const accounts = Array.isArray(response?.data) ? response.data : [];
       setBankAccounts(accounts);
       console.log('Fetched bank accounts:', accounts);
@@ -48,36 +47,48 @@ const BankAccountPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    // Prepare payload for API
+    const payload = {
+      ...formData,
+      currentBalance: Number(formData.currentBalance), // ensure number
+      accountType: formData.accountType.toUpperCase(), // ensure uppercase
+    };
+
     try {
       if (selectedAccount) {
-        await bankAccountService.updateBankAccount(selectedAccount.accountNumber, formData);
+        await bankAccountService.updateBankAccount(selectedAccount.accountNumber, payload);
       } else {
-        await bankAccountService.createBankAccount(formData);
+        await bankAccountService.createBankAccount(payload);
       }
       setModalVisible(false);
       fetchBankAccounts();
     } catch (err) {
-      console.error(err);
-      setError('Operation failed. Please try again.');
+      console.error('Error submitting form:', err);
+      setError(err.response?.data?.message || 'Operation failed. Please try again.');
     }
   };
 
   const handleEdit = (account) => {
     setSelectedAccount(account);
-    setFormData(account);
+    setFormData({ ...account, currentBalance: account.currentBalance || 0 });
     setModalVisible(true);
     setError('');
   };
 
-  const handleDelete = async (accountNumber) => {
-    if (!window.confirm('Are you sure you want to delete this account?')) return;
-    try {
-      await bankAccountService.deleteBankAccount(accountNumber);
-      fetchBankAccounts();
-    } catch {
-      alert('Failed to delete account.');
-    }
-  };
+ const handleDelete = async (account) => {
+  if (!window.confirm('Are you sure you want to delete this account?')) return;
+  try {
+    // Use accountNumber instead of id
+    await bankAccountService.deleteBankAccount(account.accountNumber);
+    fetchBankAccounts();
+  } catch (err) {
+    console.error('Failed to delete account:', err);
+    alert('Failed to delete account.');
+  }
+};
+
 
   const openModal = () => {
     setSelectedAccount(null);
@@ -85,7 +96,7 @@ const BankAccountPage = () => {
       accountName: '',
       accountNumber: '',
       accountType: '',
-      currentBalance: '',
+      currentBalance: 0,
       bankName: '',
       branchName: '',
     });
@@ -106,6 +117,7 @@ const BankAccountPage = () => {
           onDelete={handleDelete}
         />
       )}
+
       <Modal
         isOpen={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -126,12 +138,13 @@ const BankAccountPage = () => {
             onChange={handleInputChange}
             placeholder='Account Number'
             required
+            disabled={!!selectedAccount} // prevent editing accountNumber
           />
           <Input
             name='accountType'
             value={formData.accountType}
             onChange={handleInputChange}
-            placeholder='Account Type'
+            placeholder='Account Type (CURRENT/SAVINGS)'
             required
           />
           <Input
@@ -139,6 +152,7 @@ const BankAccountPage = () => {
             value={formData.currentBalance}
             onChange={handleInputChange}
             placeholder='Current Balance'
+            type='number'
             required
           />
           <Input

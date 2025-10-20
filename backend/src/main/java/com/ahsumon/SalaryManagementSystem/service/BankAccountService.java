@@ -32,9 +32,9 @@ public class BankAccountService {
         return mapToDTO(saved);
     }
 
-    public BankAccountDTO getAccount(Long accountId) {
-        return mapToDTO(bankAccountRepository.findById(accountId)
-                .orElseThrow(() -> new ResourceNotFoundException("Bank account not found")));
+    public BankAccountDTO getAccountByNumber(String accountNumber) {
+        return mapToDTO(bankAccountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Bank account not found with account number: " + accountNumber)));
     }
 
     public List<BankAccountDTO> getAllAccounts() {
@@ -43,9 +43,10 @@ public class BankAccountService {
                 .collect(Collectors.toList());
     }
 
-    public BankAccountDTO updateAccount(Long accountId, BankAccountDTO dto) {
-        BankAccount account = bankAccountRepository.findById(accountId)
-                .orElseThrow(() -> new ResourceNotFoundException("Bank account not found"));
+    // Update by account number
+    public BankAccountDTO updateAccountByNumber(String accountNumber, BankAccountDTO dto) {
+        BankAccount account = bankAccountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Bank account not found with account number: " + accountNumber));
 
         account.setAccountName(dto.getAccountName());
         account.setAccountType(dto.getAccountType());
@@ -56,9 +57,10 @@ public class BankAccountService {
         return mapToDTO(bankAccountRepository.save(account));
     }
 
-    public void deleteAccount(Long accountId) {
-        BankAccount account = bankAccountRepository.findById(accountId)
-                .orElseThrow(() -> new ResourceNotFoundException("Bank account not found"));
+    // Delete by account number
+    public void deleteAccountByNumber(String accountNumber) {
+        BankAccount account = bankAccountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Bank account not found with account number: " + accountNumber));
         bankAccountRepository.delete(account);
     }
 

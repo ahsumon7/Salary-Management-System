@@ -2,6 +2,7 @@ package com.ahsumon.SalaryManagementSystem.controller;
 
 import com.ahsumon.SalaryManagementSystem.dto.BankAccountDTO;
 import com.ahsumon.SalaryManagementSystem.dto.ApiResponse;
+import com.ahsumon.SalaryManagementSystem.exception.ResourceNotFoundException;
 import com.ahsumon.SalaryManagementSystem.service.BankAccountService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -36,16 +37,16 @@ public class BankAccountController {
         }
     }
 
-    @GetMapping("/{accountId}")
-    public ResponseEntity<ApiResponse<BankAccountDTO>> getBankAccount(@PathVariable Long accountId) {
-        log.info("Fetching bank account: {}", accountId);
+    @GetMapping("/{accountNumber}")
+    public ResponseEntity<ApiResponse<BankAccountDTO>> getBankAccount(@PathVariable String accountNumber) {
+        log.info("Fetching bank account: {}", accountNumber);
         try {
-            BankAccountDTO account = bankAccountService.getAccount(accountId);
+            BankAccountDTO account = bankAccountService.getAccountByNumber(accountNumber);
             return ResponseEntity.ok(new ApiResponse<>("Bank account retrieved", account, true));
-        } catch (Exception e) {
+        } catch (ResourceNotFoundException e) {
             log.error("Error fetching bank account: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>("Bank account not found", null, false));
+                    .body(new ApiResponse<>(e.getMessage(), null, false));
         }
     }
 
@@ -62,31 +63,31 @@ public class BankAccountController {
         }
     }
 
-    @PutMapping("/{accountId}")
+    @PutMapping("/{accountNumber}")
     public ResponseEntity<ApiResponse<BankAccountDTO>> updateBankAccount(
-            @PathVariable Long accountId,
+            @PathVariable String accountNumber,
             @Valid @RequestBody BankAccountDTO dto) {
-        log.info("Updating bank account: {}", accountId);
+        log.info("Updating bank account: {}", accountNumber);
         try {
-            BankAccountDTO updated = bankAccountService.updateAccount(accountId, dto);
+            BankAccountDTO updated = bankAccountService.updateAccountByNumber(accountNumber, dto);
             return ResponseEntity.ok(new ApiResponse<>("Bank account updated successfully", updated, true));
-        } catch (Exception e) {
+        } catch (ResourceNotFoundException e) {
             log.error("Error updating bank account: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>("Bank account not found", null, false));
+                    .body(new ApiResponse<>(e.getMessage(), null, false));
         }
     }
 
-    @DeleteMapping("/{accountId}")
-    public ResponseEntity<ApiResponse<?>> deleteBankAccount(@PathVariable Long accountId) {
-        log.info("Deleting bank account: {}", accountId);
+    @DeleteMapping("/{accountNumber}")
+    public ResponseEntity<ApiResponse<?>> deleteBankAccount(@PathVariable String accountNumber) {
+        log.info("Deleting bank account: {}", accountNumber);
         try {
-            bankAccountService.deleteAccount(accountId);
+            bankAccountService.deleteAccountByNumber(accountNumber);
             return ResponseEntity.ok(new ApiResponse<>("Bank account deleted successfully", null, true));
-        } catch (Exception e) {
+        } catch (ResourceNotFoundException e) {
             log.error("Error deleting bank account: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>("Bank account not found", null, false));
+                    .body(new ApiResponse<>(e.getMessage(), null, false));
         }
     }
 }
