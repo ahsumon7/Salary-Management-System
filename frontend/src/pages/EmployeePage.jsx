@@ -18,25 +18,14 @@ const EmployeePage = () => {
     setLoading(true);
     try {
       const data = await employeeService.getAllEmployees();
-
-      // Flatten the bankAccount object into main employee object
-      const flattened = (data || []).map((emp) => ({
-        employeeId: emp.employeeId, // used for Table delete/edit
-        name: emp.name,
-        gradeId: emp.gradeId,
-        address: emp.address,
-        mobile: emp.mobile,
-        accountNumber: emp.bankAccount?.accountNumber,
-        accountName: emp.bankAccount?.accountName,
-        accountType: emp.bankAccount?.accountType,
-        bankName: emp.bankAccount?.bankName,
-        branchName: emp.bankAccount?.branchName,
-        currentBalance: emp.bankAccount?.currentBalance,
-      }));
-
-      setEmployees(flattened);
-    } catch (error) {
-      console.error('Error fetching employees:', error);
+      setEmployees(
+        (data || []).map((emp) => ({
+          ...emp,
+          bankAccount: emp.bankAccount || {},
+        }))
+      );
+    } catch (err) {
+      console.error('Error fetching employees:', err);
       setEmployees([]);
     } finally {
       setLoading(false);
@@ -44,14 +33,12 @@ const EmployeePage = () => {
   };
 
   const handleDelete = async (employeeId) => {
-    // UPDATED: use employeeId instead of id
-    if (!window.confirm('Are you sure you want to delete this employee?'))
-      return;
+    if (!window.confirm('Are you sure you want to delete this employee?')) return;
     try {
       await employeeService.deleteEmployee(employeeId);
       fetchEmployees();
-    } catch (error) {
-      console.error('Error deleting employee:', error);
+    } catch (err) {
+      console.error('Error deleting employee:', err);
     }
   };
 
@@ -61,7 +48,6 @@ const EmployeePage = () => {
   };
 
   const handleAdd = () => {
-    // ADDED: clear selectedEmployee for Add
     setSelectedEmployee(null);
     setIsFormVisible(true);
   };
@@ -73,20 +59,18 @@ const EmployeePage = () => {
   };
 
   return (
-    <div className='container mx-auto p-4'>
-      <h1 className='text-2xl font-bold mb-4'>Employee Management</h1>
-      {/* UPDATED: call handleAdd to open form in Add mode */}
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Employee Management</h1>
       <Button onClick={handleAdd}>Add Employee</Button>
 
       {loading ? (
-        <p className='mt-4'>Loading...</p>
+        <p className="mt-4">Loading...</p>
       ) : employees.length === 0 ? (
-        <p className='mt-4'>No employees found.</p>
+        <p className="mt-4">No employees found.</p>
       ) : (
         <Table data={employees} onEdit={handleEdit} onDelete={handleDelete} />
       )}
 
-      {/* UPDATED: pass selectedEmployee or null to EmployeeForm */}
       {isFormVisible && (
         <EmployeeForm employee={selectedEmployee} onClose={handleFormClose} />
       )}
