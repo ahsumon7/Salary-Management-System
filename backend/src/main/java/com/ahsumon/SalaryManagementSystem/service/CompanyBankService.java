@@ -21,42 +21,71 @@ public class CompanyBankService {
     @Autowired
     private CompanyBankAccountRepository companyBankRepository;
 
+    // Create new company account
     public CompanyBankAccountDTO createCompanyAccount(CompanyBankAccountDTO dto) {
+        // Optional: check if account number already exists
+        if (companyBankRepository.existsByAccountNumber(dto.getAccountNumber())) {
+            throw new InvalidInputException("Account number already exists");
+        }
+
         CompanyBankAccount account = CompanyBankAccount.builder()
                 .accountNumber(dto.getAccountNumber())
+                .accountName(dto.getAccountName())
+                .bankName(dto.getBankName())
+                .branchName(dto.getBranchName())
                 .balance(dto.getBalance())
                 .build();
 
-        return mapToDTO(companyBankRepository.save(account));
+        CompanyBankAccount saved = companyBankRepository.save(account);
+        return mapToDTO(saved);
     }
 
+    // Get account by ID
     public CompanyBankAccountDTO getCompanyAccount(Long accountId) {
         CompanyBankAccount account = companyBankRepository.findById(accountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Company account not found"));
         return mapToDTO(account);
     }
 
+    // Get all company accounts
     public List<CompanyBankAccountDTO> getAllCompanyAccounts() {
         return companyBankRepository.findAll().stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
+    public CompanyBankAccountDTO getCompanyAccountByNumber(String accountNumber) {
+        CompanyBankAccount account = companyBankRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Company account not found"));
+        return mapToDTO(account);
+    }
 
-    public void addFunds(Long accountId, BigDecimal amount) {
+
+    // Add funds to an account using accountNumber
+    public void addFunds(String accountNumber, BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidInputException("Amount must be positive");
         }
 
-        CompanyBankAccount account = companyBankRepository.findById(accountId)
+        // Find account by accountNumber
+        CompanyBankAccount account = companyBankRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Company account not found"));
+
+        // Add the funds
         account.setBalance(account.getBalance().add(amount));
         account.setLastUpdated(LocalDateTime.now());
+
+        // Save the updated account
         companyBankRepository.save(account);
     }
 
+
+    // Map entity to DTO
     private CompanyBankAccountDTO mapToDTO(CompanyBankAccount account) {
         return CompanyBankAccountDTO.builder()
                 .accountNumber(account.getAccountNumber())
+                .accountName(account.getAccountName())
+                .bankName(account.getBankName())
+                .branchName(account.getBranchName())
                 .balance(account.getBalance())
                 .build();
     }

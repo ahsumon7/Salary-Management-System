@@ -42,12 +42,12 @@ public class ReportController {
     /**
      * Requirement 8: Get company account summary with total paid salary and remaining balance
      */
-    @GetMapping("/company-summary/{accountId}")
+    @GetMapping("/company-summary/{accountNumber}")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCompanyAccountSummary(
-            @PathVariable Long accountId) {
-        log.info("Endpoint: GET /company-summary/{} - Company account summary", accountId);
+            @PathVariable String accountNumber) {
+        log.info("Endpoint: GET /company-summary/{} - Company account summary", accountNumber);
         try {
-            Map<String, Object> summary = reportService.getCompanyAccountSummary(accountId);
+            Map<String, Object> summary = reportService.getCompanyAccountSummary(accountNumber);
             return ResponseEntity.ok(new ApiResponse<>("Company account summary retrieved successfully", summary, true));
         } catch (Exception e) {
             log.error("Error retrieving company account summary: {}", e.getMessage());
@@ -71,6 +71,13 @@ public class ReportController {
                     .body(new ApiResponse<>("Failed to retrieve salary sheets", null, false));
         }
     }
+    @PostMapping("/generate-sheet")
+    public ResponseEntity<ApiResponse<SalarySheetDTO>> generateSalarySheet() {
+        log.info("Endpoint: POST /generate-sheet - Generate new salary sheet");
+        SalarySheetDTO sheet = reportService.generateSalarySheet();
+        return ResponseEntity.ok(new ApiResponse<>("Salary sheet generated successfully", sheet, true));
+    }
+
 
     /**
      * Get specific salary sheet by ID

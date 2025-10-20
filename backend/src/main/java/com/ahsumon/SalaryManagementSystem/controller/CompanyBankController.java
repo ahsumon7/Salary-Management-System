@@ -41,11 +41,12 @@ public class CompanyBankController {
         }
     }
 
-    @GetMapping("/{accountId}")
-    public ResponseEntity<ApiResponse<CompanyBankAccountDTO>> getCompanyAccount(@PathVariable Long accountId) {
-        log.info("Fetching company bank account with ID: {}", accountId);
+    @GetMapping("/{accountNumber}")
+    public ResponseEntity<ApiResponse<CompanyBankAccountDTO>> getCompanyAccount(
+            @PathVariable String accountNumber) {
+        log.info("Fetching company bank account with Account Number: {}", accountNumber);
         try {
-            CompanyBankAccountDTO account = companyBankService.getCompanyAccount(accountId);
+            CompanyBankAccountDTO account = companyBankService.getCompanyAccountByNumber(accountNumber);
             return ResponseEntity.ok(new ApiResponse<>("Company bank account retrieved successfully", account, true));
         } catch (Exception e) {
             log.error("Error fetching company bank account: {}", e.getMessage());
@@ -53,6 +54,7 @@ public class CompanyBankController {
                     .body(new ApiResponse<>("Company bank account not found", null, false));
         }
     }
+
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CompanyBankAccountDTO>>> getAllCompanyAccounts() {
@@ -67,16 +69,17 @@ public class CompanyBankController {
         }
     }
 
-    @PostMapping("/{accountId}/add-funds")
+    @PostMapping("/{accountNumber}/add-funds")
     public ResponseEntity<ApiResponse<Map<String, Object>>> addFundsToAccount(
-            @PathVariable Long accountId,
+            @PathVariable String accountNumber,
             @RequestParam BigDecimal amount) {
-        log.info("Adding funds to company account ID: {} - Amount: {}", accountId, amount);
+        log.info("Adding funds to company account Number: {} - Amount: {}", accountNumber, amount);
         try {
-            companyBankService.addFunds(accountId, amount);
+            // Call service using accountNumber
+            companyBankService.addFunds(accountNumber, amount);
 
             Map<String, Object> response = new HashMap<>();
-            response.put("accountId", accountId);
+            response.put("accountNumber", accountNumber);
             response.put("amountAdded", amount);
             response.put("timestamp", System.currentTimeMillis());
             response.put("message", "Funds added successfully");
@@ -89,15 +92,17 @@ public class CompanyBankController {
         }
     }
 
-    @GetMapping("/{accountId}/balance")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getAccountBalance(@PathVariable Long accountId) {
-        log.info("Fetching balance for company account ID: {}", accountId);
+
+    @GetMapping("/{accountNumber}/balance")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAccountBalance(@PathVariable String accountNumber) {
+        log.info("Fetching balance for company account Number: {}", accountNumber);
         try {
-            CompanyBankAccountDTO account = companyBankService.getCompanyAccount(accountId);
+            // Fetch account by accountNumber
+            CompanyBankAccountDTO account = companyBankService.getCompanyAccountByNumber(accountNumber);
 
             Map<String, Object> response = new HashMap<>();
-            response.put("accountId", accountId);
             response.put("accountNumber", account.getAccountNumber());
+            response.put("accountName", account.getAccountName());
             response.put("balance", account.getBalance());
             response.put("timestamp", System.currentTimeMillis());
 
@@ -108,4 +113,5 @@ public class CompanyBankController {
                     .body(new ApiResponse<>("Account not found", null, false));
         }
     }
+
 }

@@ -25,6 +25,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider tokenProvider;
     private final UserDetailsService userDetailsService;
 
+    // Exclude Swagger and OpenAPI endpoints
+    private static final String[] EXCLUDE_URLS = {
+            "/v3/api-docs",
+            "/v3/api-docs/",
+            "/v3/api-docs/**",
+            "/swagger-ui",
+            "/swagger-ui/",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
+    };
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        for (String exclude : EXCLUDE_URLS) {
+            if (path.startsWith(exclude)) {
+                return true; // Skip JWT filter for Swagger
+            }
+        }
+        return false;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {

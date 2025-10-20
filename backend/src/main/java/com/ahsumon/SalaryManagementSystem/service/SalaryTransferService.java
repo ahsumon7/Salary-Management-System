@@ -38,52 +38,64 @@ public class SalaryTransferService {
     @Autowired
     private SalaryCalculationService calculationService;
 
+    /**
+     * Processes salary transfer for all employees using company account number.
+     */
     @Transactional
-    public SalarySheetDTO processSalaryTransfer(Long companyAccountId) {
-        CompanyBankAccount companyAccount = companyBankRepository.findById(companyAccountId)
+    public SalarySheetDTO processSalaryTransfer(String accountNumber) {
+        log.info("Processing salary transfer for company account: {}", accountNumber);
+
+        // ✅ Fetch company account by account number
+        CompanyBankAccount companyAccount = companyBankRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Company account not found"));
 
+        // ✅ Fetch all employees
         List<Employee> employees = employeeRepository.findAll();
+        if (employees.isEmpty()) {
+            throw new ResourceNotFoundException("No employees found to process salary.");
+        }
+
         BigDecimal totalPaidSalary = BigDecimal.ZERO;
         BigDecimal balanceBefore = companyAccount.getBalance();
         List<SalaryTransaction> transactions = new ArrayList<>();
         int successCount = 0;
         int failCount = 0;
 
+        // ✅ Process salary for each employee
         for (Employee employee : employees) {
             SalaryBreakdown breakdown = calculationService.calculateSalary(employee);
+            BigDecimal requiredAmount = breakdown.getTotalSalary();
 
-            // Check funds
-            if (companyAccount.getBalance().compareTo(breakdown.getTotalSalary()) >= 0) {
+            if (companyAccount.getBalance().compareTo(requiredAmount) >= 0) {
                 // Deduct from company account
-                companyAccount.setBalance(companyAccount.getBalance().subtract(breakdown.getTotalSalary()));
+                companyAccount.setBalance(companyAccount.getBalance().subtract(requiredAmount));
 
                 // Add to employee account
                 BankAccount empAccount = employee.getBankAccount();
-                empAccount.setCurrentBalance(empAccount.getCurrentBalance().add(breakdown.getTotalSalary()));
+                empAccount.setCurrentBalance(empAccount.getCurrentBalance().add(requiredAmount));
 
-                // Create transaction record
+                // Create successful transaction
                 SalaryTransaction transaction = SalaryTransaction.builder()
                         .employee(employee)
                         .basicSalary(breakdown.getBasicSalary())
                         .houseRent(breakdown.getHouseRent())
                         .medicalAllowance(breakdown.getMedicalAllowance())
-                        .totalSalary(breakdown.getTotalSalary())
+                        .totalSalary(requiredAmount)
                         .transactionDate(LocalDate.now())
                         .status(TransactionStatus.SUCCESS)
                         .build();
 
                 transactions.add(transaction);
-                totalPaidSalary = totalPaidSalary.add(breakdown.getTotalSalary());
+                totalPaidSalary = totalPaidSalary.add(requiredAmount);
                 successCount++;
             } else {
-                // Insufficient funds
+                // Create failed transaction (insufficient funds)
                 SalaryTransaction transaction = SalaryTransaction.builder()
                         .employee(employee)
                         .basicSalary(breakdown.getBasicSalary())
                         .houseRent(breakdown.getHouseRent())
                         .medicalAllowance(breakdown.getMedicalAllowance())
-                        .totalSalary(breakdown.getTotalSalary())
+                        .totalSalary(requiredAmount)
                         .transactionDate(LocalDate.now())
                         .status(TransactionStatus.FAILED)
                         .remarks("Insufficient company funds")
@@ -93,12 +105,13 @@ public class SalaryTransferService {
                 failCount++;
             }
         }
-        // Save all transactions and update company account
+
+        // ✅ Save transactions and update company account
         transactionRepository.saveAll(transactions);
         companyAccount.setLastUpdated(LocalDateTime.now());
         companyBankRepository.save(companyAccount);
 
-        // Create salary sheet
+        // ✅ Build salary sheet summary
         SalarySheet salarySheet = SalarySheet.builder()
                 .generatedDate(LocalDate.now())
                 .totalPaidSalary(totalPaidSalary)
@@ -109,26 +122,35 @@ public class SalaryTransferService {
                 .failedCount(failCount)
                 .build();
 
-        // Return DTO with all details
+        log.info("Salary transfer completed. Success: {}, Failed: {}, Total Paid: {}, Balance After: {}",
+                successCount, failCount, totalPaidSalary, companyAccount.getBalance());
+
         return buildSalarySheetDTO(salarySheet, transactions);
     }
 
+    /**
+     * Adds funds to a company bank account.
+     */
     @Transactional
-    public void addFundsToCompanyAccount(Long accountId, BigDecimal amount) {
+    public void addFundsToCompanyAccount(String accountNumber, BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidInputException("Amount must be greater than zero");
         }
 
-        CompanyBankAccount account = companyBankRepository.findById(accountId)
+        CompanyBankAccount account = companyBankRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Company account not found"));
 
         account.setBalance(account.getBalance().add(amount));
         account.setLastUpdated(LocalDateTime.now());
         companyBankRepository.save(account);
 
-        log.info("Added {} to company account. New balance: {}", amount, account.getBalance());
+        log.info("Added {} to company account {}. New balance: {}", amount, accountNumber, account.getBalance());
     }
 
+
+    /**
+     * Builds the salary sheet DTO for the API response.
+     */
     private SalarySheetDTO buildSalarySheetDTO(SalarySheet salarySheet, List<SalaryTransaction> transactions) {
         List<SalaryDTO> salaryDTOs = transactions.stream()
                 .map(this::mapTransactionToSalaryDTO)
@@ -144,9 +166,12 @@ public class SalaryTransferService {
                 .build();
     }
 
+    /**
+     * Maps transaction entity to DTO.
+     */
     private SalaryDTO mapTransactionToSalaryDTO(SalaryTransaction transaction) {
         return SalaryDTO.builder()
-                .employeeId(transaction.getEmployee().getId().toString())
+                .employeeId(transaction.getEmployee().getEmployeeId()) // Use employeeId instead of internal ID
                 .employeeName(transaction.getEmployee().getName())
                 .grade(transaction.getEmployee().getGrade().getGradeLevel())
                 .basicSalary(transaction.getBasicSalary())

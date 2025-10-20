@@ -12,8 +12,10 @@ import com.ahsumon.SalaryManagementSystem.repository.SalarySheetRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,10 +73,10 @@ public class ReportService {
     /**
      * Requirement 8: Get company account summary with total paid salary and remaining balance
      */
-    public Map<String, Object> getCompanyAccountSummary(Long accountId) {
-        log.info("Generating company account summary (Requirement 8) for account: {}", accountId);
+    public Map<String, Object> getCompanyAccountSummary(String accountNumber) {
+        log.info("Generating company account summary for account: {}", accountNumber);
 
-        CompanyBankAccount account = companyBankRepository.findById(accountId)
+        CompanyBankAccount account = companyBankRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Company account not found"));
 
         // Calculate total paid salary
@@ -93,6 +95,7 @@ public class ReportService {
         log.info("Company account summary - Total paid: {}, Remaining: {}", totalPaidSalary, account.getBalance());
         return response;
     }
+
 
     /**
      * Get all salary sheets
@@ -128,4 +131,43 @@ public class ReportService {
                 .failedCount(sheet.getFailedCount())
                 .build();
     }
+    @Transactional
+    public SalarySheetDTO generateSalarySheet() {
+        log.info("Generating new salary sheet...");
+
+        // 1️⃣ Fetch all employees and calculate total salary
+        List<Employee> employees = employeeRepository.findAll();
+        BigDecimal totalPaidSalary = employees.stream()
+                .map(salaryCalculationService::calculateSalary)
+                .map(SalaryBreakdown::getTotalSalary)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 2️⃣ Get company account
+        CompanyBankAccount account = companyBankRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Company account not found"));
+
+        BigDecimal balanceBefore = account.getBalance();
+        BigDecimal balanceAfter = balanceBefore.subtract(totalPaidSalary);
+
+        // 3️⃣ Update account balance
+        account.setBalance(balanceAfter);
+        companyBankRepository.save(account);
+
+        // 4️⃣ Create SalarySheet entity
+        SalarySheet sheet = new SalarySheet();
+        sheet.setGeneratedDate(LocalDate.now());
+        sheet.setTotalPaidSalary(totalPaidSalary);
+        sheet.setCompanyBalanceBefore(balanceBefore);
+        sheet.setCompanyBalanceAfter(balanceAfter);
+        sheet.setTransactionCount(employees.size());
+        sheet.setSuccessfulCount(employees.size());
+        sheet.setFailedCount(0);
+
+        salarySheetRepository.save(sheet);
+
+        log.info("Salary sheet saved successfully: {}", sheet.getId());
+        return mapToDTO(sheet);
+    }
+
 }

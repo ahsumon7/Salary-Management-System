@@ -25,6 +25,15 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+    private static final String[] SWAGGER_WHITELIST = {
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/swagger-ui/index.html"
+    };
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -40,42 +49,37 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authz -> authz
-                        // Public endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/public/**").permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        // ✅ Allow Swagger & OPTIONS Preflight
+                        .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Employee endpoints
+                        // Public endpoints
+                        .requestMatchers("/api/auth/**", "/api/public/**").permitAll()
+
+                        // Your secured endpoints...
                         .requestMatchers(HttpMethod.GET, "/api/v1/employees/**").hasAnyRole("ADMIN", "HR", "USER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/employees/**").hasAnyRole("ADMIN", "HR")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/employees/**").hasAnyRole("ADMIN", "HR")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/employees/**").hasRole("ADMIN")
 
-
-                        // Grade endpoints
                         .requestMatchers("/api/v1/grades/**").hasAnyRole("ADMIN", "HR")
 
-                        // Bank account endpoints
                         .requestMatchers(HttpMethod.GET, "/api/v1/bank-accounts/**").hasAnyRole("ADMIN", "HR", "USER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/bank-accounts/**").hasAnyRole("ADMIN", "HR")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/bank-accounts/**").hasAnyRole("ADMIN", "HR")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/bank-accounts/**").hasRole("ADMIN")
 
-                        // Company bank endpoints
                         .requestMatchers("/api/v1/company-bank/**").hasRole("ADMIN")
 
-                        // Salary endpoints
                         .requestMatchers(HttpMethod.GET, "/api/salary/**").hasAnyRole("ADMIN", "HR")
                         .requestMatchers(HttpMethod.POST, "/api/salary/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/salary/**").hasRole("ADMIN")
 
-                        // Transaction endpoints
                         .requestMatchers(HttpMethod.GET, "/api/transactions/**").hasAnyRole("ADMIN", "HR", "USER")
 
-                        // Report endpoints
                         .requestMatchers("/api/reports/**").hasAnyRole("ADMIN", "HR")
 
-                        // All other requests require authentication
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions
