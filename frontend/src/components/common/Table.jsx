@@ -2,9 +2,9 @@ import React from 'react';
 import Button from './Button';
 
 const Table = ({ data = [], onEdit, onDelete }) => {
-  if (!data || data.length === 0) return <p>No data available</p>;
+  if (!Array.isArray(data) || data.length === 0) return <p>No data available</p>;
 
-  const headers = Object.keys(data[0]);
+  const headers = Object.keys(data[0] || {});
 
   return (
     <table className='table'>
@@ -26,7 +26,9 @@ const Table = ({ data = [], onEdit, onDelete }) => {
               <td>
                 {onEdit && <Button onClick={() => onEdit(row)}>Edit</Button>}
                 {onDelete && (
-                  <Button onClick={() => onDelete(row.id)}>Delete</Button>
+                  <Button onClick={() => onDelete(row.id || row.employeeId)}>
+                    Delete
+                  </Button>
                 )}
               </td>
             )}

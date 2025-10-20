@@ -10,7 +10,7 @@ const EmployeeForm = () => {
   const [employee, setEmployee] = useState({
     id: '',
     name: '',
-    grade: '',
+    gradeId: '', // use gradeId instead of grade string
     address: '',
     mobile: '',
     bankAccount: {
@@ -23,26 +23,38 @@ const EmployeeForm = () => {
     },
   });
 
-  const [grades, setGrades] = useState([]);
+  const [grades, setGrades] = useState([]); // array of objects
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
+    // Fetch grades
     const fetchGrades = async () => {
-      const gradeList = await gradeService.getAllGrades();
-      setGrades(gradeList);
+      try {
+        const gradeList = await gradeService.getAllGrades();
+        setGrades(Array.isArray(gradeList) ? gradeList : []);
+      } catch (err) {
+        console.error('Failed to fetch grades:', err);
+      }
+    };
+
+    // Fetch employee if editing
+    const fetchEmployee = async () => {
+      if (employeeId) {
+        try {
+          const emp = await employeeService.getEmployeeById(employeeId);
+          setEmployee({
+            ...emp,
+            gradeId: emp.gradeId || '',
+          });
+          setIsEditing(true);
+        } catch (err) {
+          console.error('Failed to fetch employee:', err);
+        }
+      }
     };
 
     fetchGrades();
-
-    if (employeeId) {
-      const fetchEmployee = async () => {
-        const emp = await employeeService.getEmployeeById(employeeId);
-        setEmployee(emp);
-        setIsEditing(true);
-      };
-
-      fetchEmployee();
-    }
+    fetchEmployee();
   }, [employeeId]);
 
   const handleChange = (e) => {
@@ -66,18 +78,33 @@ const EmployeeForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isEditing) {
-      await employeeService.updateEmployee(employee.id, employee);
-    } else {
-      await employeeService.createEmployee(employee);
+
+    // Transform employee state to match backend API
+    const payload = {
+      employeeId: employee.id || undefined, // undefined for new employee
+      name: employee.name,
+      gradeId: employee.gradeId,
+      address: employee.address,
+      mobile: employee.mobile,
+      bankAccount: { ...employee.bankAccount },
+    };
+
+    try {
+      if (isEditing) {
+        await employeeService.updateEmployee(employee.id, payload);
+      } else {
+        await employeeService.createEmployee(payload);
+      }
+      navigate('/employees');
+    } catch (err) {
+      console.error('Error saving employee:', err);
     }
-    navigate('/employees');
   };
 
   return (
-    <div className='container'>
-      <h2>{isEditing ? 'Edit Employee' : 'Add Employee'}</h2>
-      <form onSubmit={handleSubmit}>
+    <div className='container mx-auto p-4'>
+      <h2 className='text-xl font-bold mb-4'>{isEditing ? 'Edit Employee' : 'Add Employee'}</h2>
+      <form onSubmit={handleSubmit} className='space-y-3'>
         <input
           type='text'
           name='name'
@@ -85,20 +112,24 @@ const EmployeeForm = () => {
           onChange={handleChange}
           placeholder='Name'
           required
+          className='border p-2 w-full'
         />
+
         <select
-          name='grade'
-          value={employee.grade}
+          name='gradeId'
+          value={employee.gradeId}
           onChange={handleChange}
           required
+          className='border p-2 w-full'
         >
           <option value=''>Select Grade</option>
           {grades.map((grade) => (
-            <option key={grade} value={grade}>
-              {grade}
+            <option key={grade.id} value={grade.id}>
+              {grade.name}
             </option>
           ))}
         </select>
+
         <input
           type='text'
           name='address'
@@ -106,6 +137,7 @@ const EmployeeForm = () => {
           onChange={handleChange}
           placeholder='Address'
           required
+          className='border p-2 w-full'
         />
         <input
           type='text'
@@ -114,9 +146,10 @@ const EmployeeForm = () => {
           onChange={handleChange}
           placeholder='Mobile'
           required
+          className='border p-2 w-full'
         />
 
-        <h3>Bank Account Details</h3>
+        <h3 className='font-semibold mt-4'>Bank Account Details</h3>
         <input
           type='text'
           name='accountType'
@@ -124,6 +157,7 @@ const EmployeeForm = () => {
           onChange={handleBankChange}
           placeholder='Account Type'
           required
+          className='border p-2 w-full'
         />
         <input
           type='text'
@@ -132,6 +166,7 @@ const EmployeeForm = () => {
           onChange={handleBankChange}
           placeholder='Account Name'
           required
+          className='border p-2 w-full'
         />
         <input
           type='text'
@@ -140,6 +175,7 @@ const EmployeeForm = () => {
           onChange={handleBankChange}
           placeholder='Account Number'
           required
+          className='border p-2 w-full'
         />
         <input
           type='number'
@@ -148,6 +184,7 @@ const EmployeeForm = () => {
           onChange={handleBankChange}
           placeholder='Current Balance'
           required
+          className='border p-2 w-full'
         />
         <input
           type='text'
@@ -156,6 +193,7 @@ const EmployeeForm = () => {
           onChange={handleBankChange}
           placeholder='Bank Name'
           required
+          className='border p-2 w-full'
         />
         <input
           type='text'
@@ -164,9 +202,15 @@ const EmployeeForm = () => {
           onChange={handleBankChange}
           placeholder='Branch Name'
           required
+          className='border p-2 w-full'
         />
 
-        <button type='submit'>{isEditing ? 'Update' : 'Add'} Employee</button>
+        <button
+          type='submit'
+          className='bg-blue-500 text-white px-4 py-2 rounded'
+        >
+          {isEditing ? 'Update' : 'Add'} Employee
+        </button>
       </form>
     </div>
   );

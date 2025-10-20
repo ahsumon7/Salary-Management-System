@@ -27,9 +27,18 @@ const BankAccountPage = () => {
 
   const fetchBankAccounts = async () => {
     setLoading(true);
-    const accounts = await bankAccountService.getBankAccounts();
-    setBankAccounts(accounts);
-    setLoading(false);
+    try {
+      const response = await bankAccountService.getBankAccounts();
+      // extract the array from response.data
+      const accounts = Array.isArray(response?.data) ? response.data : [];
+      setBankAccounts(accounts);
+      console.log('Fetched bank accounts:', accounts);
+    } catch (err) {
+      console.error('Error fetching bank accounts:', err);
+      setBankAccounts([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -41,16 +50,14 @@ const BankAccountPage = () => {
     e.preventDefault();
     try {
       if (selectedAccount) {
-        await bankAccountService.updateBankAccount(
-          selectedAccount.id,
-          formData
-        );
+        await bankAccountService.updateBankAccount(selectedAccount.accountNumber, formData);
       } else {
         await bankAccountService.createBankAccount(formData);
       }
       setModalVisible(false);
       fetchBankAccounts();
     } catch (err) {
+      console.error(err);
       setError('Operation failed. Please try again.');
     }
   };
@@ -62,11 +69,10 @@ const BankAccountPage = () => {
     setError('');
   };
 
-  const handleDelete = async (accountId) => {
-    if (!window.confirm('Are you sure you want to delete this account?'))
-      return;
+  const handleDelete = async (accountNumber) => {
+    if (!window.confirm('Are you sure you want to delete this account?')) return;
     try {
-      await bankAccountService.deleteBankAccount(accountId);
+      await bankAccountService.deleteBankAccount(accountNumber);
       fetchBankAccounts();
     } catch {
       alert('Failed to delete account.');
