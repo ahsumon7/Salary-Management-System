@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: salary-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: salarydb
+      POSTGRES_USER: salaryuser
+      POSTGRES_PASSWORD: salarypass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: salary-backend
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/salarydb
+      SPRING_DATASOURCE_USERNAME: salaryuser
+      SPRING_DATASOURCE_PASSWORD: salarypass
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    container_name: salary-frontend
+    restart: on-failure
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres-data:

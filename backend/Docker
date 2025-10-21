@@ -1,0 +1,17 @@
+# Use OpenJDK 21 Alpine
+FROM eclipse-temurin:21-jdk-alpine
+
+WORKDIR /app
+
+# Copy Maven wrapper and project files
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+COPY src ./src
+
+# Build the jar
+RUN ./mvnw clean package -DskipTests || mvn clean package -DskipTests
+
+EXPOSE 8080
+
+CMD ["java", "-jar", "target/demo-0.0.1-SNAPSHOT.jar"]
