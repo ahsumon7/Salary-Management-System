@@ -1,25 +1,29 @@
+// src/services/salaryService.js
 import api from '../api/api';
 
 /**
- * Get all salaries
+ * ✅ Get total salary paid for a specific company account
  */
-export const getAllSalaries = async () => {
-  const response = await api.get('/api/v1/salary/all');
-  return response.data;
+export const getTotalSalaryPaid = async (accountNumber) => {
+  try {
+    const response = await api.get(`/api/v1/salary-transfer/${accountNumber}/salary-sheet`);
+    // Backend returns: data.data.totalPaidSalary
+    return response.data?.data?.totalPaidSalary || 0;
+  } catch (error) {
+    console.error('Error fetching total salary paid:', error);
+    return 0;
+  }
 };
 
 /**
- * Calculate total salary paid
+ * ✅ Get detailed salary sheet
  */
-export const getTotalSalaryPaid = async () => {
-  const salaries = await getAllSalaries();
-  return salaries.reduce((total, s) => total + (s.amount || 0), 0);
-};
-
-/**
- * Get salary details for an employee
- */
-export const getSalaryDetails = async (employeeId) => {
-  const response = await api.get(`/api/v1/salary/${employeeId}/details`);
-  return response.data;
+export const getSalarySheet = async (accountNumber) => {
+  try {
+    const response = await api.get(`/api/v1/salary-transfer/${accountNumber}/salary-sheet`);
+    return response.data?.data || {};
+  } catch (error) {
+    console.error('Error fetching salary sheet:', error);
+    throw error;
+  }
 };

@@ -1,36 +1,75 @@
+// src/services/companyAccountService.js
 import api from '../api/api';
 
 const companyAccountService = {
-  // 1. Get all accounts
+  /**
+   * ✅ Get all company accounts
+   */
   getAllAccounts: async () => {
-    const response = await api.get('/api/v1/company-bank');
-    return response.data; // { success, message, data: [...] }
+    try {
+      const response = await api.get('/api/v1/company-bank');
+      return response.data; // { success, message, data: [...] }
+    } catch (error) {
+      console.error('Error fetching accounts:', error);
+      throw error.response?.data || { success: false, message: 'Failed to fetch accounts' };
+    }
   },
 
-  // 2. Create new account
+  /**
+   * ✅ Create a new company account
+   */
   createAccount: async (accountData) => {
-    const response = await api.post('/api/v1/company-bank', accountData);
-    return response.data;
+    try {
+      const response = await api.post('/api/v1/company-bank', accountData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating account:', error);
+      throw error.response?.data || { success: false, message: 'Failed to create account' };
+    }
   },
 
-  // 3. Get single account by account number
+  /**
+   * ✅ Get single company account by account number
+   */
   getCompanyAccount: async (accountNumber) => {
-    const response = await api.get(`/api/v1/company-bank/${accountNumber}`);
-    return response.data;
+    try {
+      const response = await api.get(`/api/v1/company-bank/${accountNumber}`);
+      return response.data?.data || {}; // extract data object directly
+    } catch (error) {
+      console.error('Error fetching account:', error);
+      throw error.response?.data || { success: false, message: 'Failed to fetch account' };
+    }
   },
 
-  // 4. Add funds
+  /**
+   * ✅ Add funds to company account
+   */
   addFunds: async (accountNumber, amount) => {
-    const response = await api.post(
-      `/api/v1/company-bank/${accountNumber}/add-funds?amount=${amount}`
-    );
-    return response.data;
+    try {
+      const response = await api.post(
+        `/api/v1/company-bank/${accountNumber}/add-funds`,
+        null, // no body, only query params
+        { params: { amount } }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error adding funds:', error);
+      throw error.response?.data || { success: false, message: 'Failed to add funds' };
+    }
   },
 
-  // 5. Get balance only
+  /**
+   * ✅ Get company account balance only
+   */
   getBalance: async (accountNumber) => {
-    const response = await api.get(`/api/v1/company-bank/${accountNumber}/balance`);
-    return response.data;
+    try {
+      const response = await api.get(`/api/v1/company-bank/${accountNumber}/balance`);
+      // Expected backend: { success: true, data: { balance: 9332000 } }
+      return response.data?.data?.balance || 0;
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+      throw error.response?.data || { success: false, message: 'Failed to fetch balance' };
+    }
   },
 };
 
