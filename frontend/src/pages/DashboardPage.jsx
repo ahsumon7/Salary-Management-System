@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatCard from '../components/common/StatCard';
 import companyAccountService from '../services/companyAccountService';
+import authService from '../services/authService';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -20,9 +21,22 @@ const DashboardPage = () => {
     fetchData();
   }, []);
 
+  const handleLogout = () => {
+    authService.logout(); // remove token
+    navigate('/'); // redirect to login page
+  };
+
   return (
     <div className='dashboard container mx-auto p-6'>
-      <h1 className='text-3xl font-bold mb-6 text-gray-800'>Dashboard</h1>
+      <div className='flex justify-between items-center mb-6'>
+        <h1 className='text-3xl font-bold text-gray-800'>Dashboard</h1>
+        <button
+          onClick={handleLogout}
+          className='btn bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded shadow'
+        >
+          Logout
+        </button>
+      </div>
 
       {/* Stats cards */}
       <div className='stats grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-8'>
