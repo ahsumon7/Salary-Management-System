@@ -8,6 +8,7 @@ import CompanyAccountPage from './pages/CompanyAccountPage';
 import GradePage from './pages/GradePage';
 import ReportsPage from './pages/ReportsPage';
 import SalaryProcessPage from './pages/SalaryProcessPage';
+import SalaryReportPage from './pages/SalaryReportPage';
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
         <Route path='/grades' element={<GradePage />} />
         <Route path='/reports' element={<ReportsPage />} />
         <Route path='/salary-process' element={<SalaryProcessPage />} />
+        <Route path='/salary-report' element={<SalaryReportPage />} />
       </Routes>
     </Router>
   );

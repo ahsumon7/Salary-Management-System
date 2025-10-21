@@ -7,8 +7,12 @@ import api from '../api/api';
 export const getTotalSalaryPaid = async (accountNumber) => {
   try {
     const response = await api.get(`/api/v1/salary-transfer/${accountNumber}/salary-sheet`);
-    // Backend returns: data.data.totalPaidSalary
-    return response.data?.data?.totalPaidSalary || 0;
+    
+    // Make sure we log the response to debug
+    console.log('Salary sheet response:', response.data);
+
+    // Correctly extract totalPaidSalary
+    return response.data?.data?.totalPaidSalary ?? 0;
   } catch (error) {
     console.error('Error fetching total salary paid:', error);
     return 0;
