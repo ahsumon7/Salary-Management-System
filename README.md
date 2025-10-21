@@ -79,3 +79,35 @@ The **Salary Management System** is a web application to calculate and manage em
    ```bash
    mvn spring-boot:run
 Swagger API: http://localhost:8080/swagger-ui/index.html
+
+
+Frontend
+
+Install Node.js and npm.
+
+Navigate to frontend folder.
+
+Install dependencies:
+
+npm install
+
+
+Run React app:
+
+npm start
+
+Usage
+
+Register or login as admin.
+
+Add company bank account and initial balance.
+
+Add employees and grades.
+
+Calculate salaries and transfer to employee accounts.
+
+Generate reports and view dashboard.
+
+Author
+
+Abdul Hannan Sumon
