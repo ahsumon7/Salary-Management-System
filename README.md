@@ -47,48 +47,80 @@ API Documentation: Swagger (http://localhost:8080/swagger-ui/index.html
 Authentication: JWT
 
 🔗 REST API Endpoints
+
+
 Grades
-Method	Endpoint	Description
-GET	/api/v1/grades	List all grades
-POST	/api/v1/grades	Create grade
-GET	/api/v1/grades/{gradeId}	Get grade details
-PUT	/api/v1/grades/{gradeId}	Update grade
-DELETE	/api/v1/grades/{gradeId}	Delete grade
+
+GET /api/v1/grades — List all grades
+
+POST /api/v1/grades — Create grade
+
+GET /api/v1/grades/{gradeId} — Get grade details
+
+PUT /api/v1/grades/{gradeId} — Update grade
+
+DELETE /api/v1/grades/{gradeId} — Delete grade
+
 Employees
-Method	Endpoint	Description
-GET	/api/v1/employees	List all employees
-POST	/api/v1/employees	Create employee
-GET	/api/v1/employees/{employeeId}	Employee details
-PUT	/api/v1/employees/{employeeId}	Update employee
-DELETE	/api/v1/employees/{employeeId}	Delete employee
+
+GET /api/v1/employees — List all employees
+
+POST /api/v1/employees — Create employee
+
+GET /api/v1/employees/{employeeId} — Employee details
+
+PUT /api/v1/employees/{employeeId} — Update employee
+
+DELETE /api/v1/employees/{employeeId} — Delete employee
+
 Bank Accounts
-Method	Endpoint	Description
-GET	/api/v1/bank-accounts	List all accounts
-POST	/api/v1/bank-accounts	Add account
-GET	/api/v1/bank-accounts/{accountNumber}	Account details
-PUT	/api/v1/bank-accounts/{accountNumber}	Update account
-DELETE	/api/v1/bank-accounts/{accountNumber}	Delete account
+
+GET /api/v1/bank-accounts — List all accounts
+
+POST /api/v1/bank-accounts — Add account
+
+GET /api/v1/bank-accounts/{accountNumber} — Account details
+
+PUT /api/v1/bank-accounts/{accountNumber} — Update account
+
+DELETE /api/v1/bank-accounts/{accountNumber} — Delete account
+
 Salary
-Method	Endpoint	Description
-GET	/api/v1/salary/{employeeId}/details	Salary details
-GET	/api/v1/salary/{employeeId}/breakdown	Salary breakdown
-GET	/api/v1/salary/calculate/{employeeId}	Calculate salary
-GET	/api/v1/salary/all	Calculate all salaries
-POST	/api/v1/salary-transfer/{accountNumber}/process	Transfer salary
-POST	/api/v1/salary-transfer/{accountNumber}/add-funds	Add funds to company account
+
+GET /api/v1/salary/{employeeId}/details — Salary details
+
+GET /api/v1/salary/{employeeId}/breakdown — Salary breakdown
+
+GET /api/v1/salary/calculate/{employeeId} — Calculate salary
+
+GET /api/v1/salary/all — Calculate all salaries
+
+POST /api/v1/salary-transfer/{accountNumber}/process — Transfer salary
+
+POST /api/v1/salary-transfer/{accountNumber}/add-funds — Add funds to company account
+
 Reports
-Method	Endpoint	Description
-POST	/api/v1/reports/generate-sheet	Generate salary sheet
-GET	/api/v1/reports/sheet/{sheetId}	Get specific salary sheet
-GET	/api/v1/reports/company-summary/{accountNumber}	Company summary
-GET	/api/v1/reports/all-sheets	All salary sheets
+
+POST /api/v1/reports/generate-sheet — Generate salary sheet
+
+GET /api/v1/reports/sheet/{sheetId} — Get specific salary sheet
+
+GET /api/v1/reports/company-summary/{accountNumber} — Company summary
+
+GET /api/v1/reports/all-sheets — All salary sheets
+
 Authentication
-Method	Endpoint	Description
-POST	/api/auth/login	Login
-POST	/api/auth/register	Register user
-POST	/api/auth/logout	Logout
-POST	/api/auth/refresh-token	Refresh JWT
-GET	/api/auth/validate-token	Validate JWT
+
+POST /api/auth/login — Login
+
+POST /api/auth/register — Register user
+
+POST /api/auth/logout — Logout
+
+POST /api/auth/refresh-token — Refresh JWT
+
+GET /api/auth/validate-token — Validate JWT
+
 ⚙ Getting Started
 Backend
 # Install Java 21 and Maven
