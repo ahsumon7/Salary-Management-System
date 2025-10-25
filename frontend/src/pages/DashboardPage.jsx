@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import companyAccountService from '../services/companyAccountService';
+import employeeService from '../services/employeeService';
 import authService from '../services/authService';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [companyBalance, setCompanyBalance] = useState(0);
-  const [employeeCount] = useState(11);
+  const [employeeCount, setEmployeeCount] = useState(0);
   const accountNumber = '1001001001';
 
   useEffect(() => {
@@ -14,6 +15,9 @@ const DashboardPage = () => {
       try {
         const balance = await companyAccountService.getBalance(accountNumber);
         setCompanyBalance(balance);
+
+        const employees = await employeeService.getAllEmployees();
+        setEmployeeCount(employees.length);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       }
